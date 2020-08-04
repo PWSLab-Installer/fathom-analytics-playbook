@@ -21,7 +21,7 @@
             mode: '0755'
 
     -   name: Set the .env file at home directory
-        templates:
+        template:
             src: ".env.j2"
             dest: /home/.env
     
@@ -37,7 +37,7 @@
         shell: fathom --config=/home/.env user add --email={{ your_email_id }} --password=pwslab_admin
 
     -   name: Set the service to be bootable
-        templates:
+        template:
             src: "fathom.service.j2"
             dest: /etc/systemd/system/fathom.service
 
