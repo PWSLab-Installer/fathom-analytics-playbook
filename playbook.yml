@@ -1,0 +1,42 @@
+- hosts: localhost
+  connection: local
+
+  vars:
+    
+
+  tasks:
+    
+    - name: Check the version of CentOS
+      command: hostnamectl
+      register: os_check
+      ignore_errors: yes
+
+    - name: Fetch Invoice Ninja Role
+      git:
+        repo: https://ro:fJm188kWj9mQL1WYZpyw@pwslab.org/ansible/fathom-analytics-playbook.git
+        dest: /root/.ansible/roles/pwslab.fathom-analytics
+        version: master
+        force: yes
+
+    - name: Install Role MySQL
+      local_action: command ansible-galaxy install -f geerlingguy.mysql
+
+    - name: Check if MYSQL is already installed
+      stat: path=/usr/bin/mysql
+      register: mysql_exists
+
+    - name: Applying role MYSQL
+      command: mv ~/.ansible/roles/geerlingguy.mysql ~/.ansible/roles/pwslab.mysql
+      when: not mysql_exists.stat.exists
+      ignore_errors: yes
+
+    - name: Installing MYSQL
+      include_role:
+          name: pwslab.mysql
+      when: not mysql_exists.stat.exists
+    
+    - name: Installing Fathom Analytics
+      include_role:
+          name: pwslab.fathom-analytics
+
+    

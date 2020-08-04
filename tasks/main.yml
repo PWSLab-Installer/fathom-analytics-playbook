@@ -1,0 +1,49 @@
+---
+
+    - name: Create schema for fathom
+      shell: mysql -u root -p'root' -e "CREATE SCHEMA fathom DEFAULT CHARACTER SET utf8 COLLATE utf8_general_ci;"
+
+    - name: Create DB User fathom
+      shell: mysql -u root -p'root' -e "CREATE USER 'fathom'@'localhost' IDENTIFIED BY 'fathom';"
+
+    - name: Grant Privs to User fathom
+      shell: mysql -u root -p'root' -e "GRANT ALL PRIVILEGES ON fathom.* TO 'fathom'@'localhost';"
+      
+    - name: Alter Privs to User fathom
+      shell: mysql -u root -p'root' -e "ALTER USER fathom@'localhost' IDENTIFIED WITH mysql_native_password BY 'fathom';"
+      when:
+        - os_check.stdout | regex_search("Ubuntu 20")
+
+    -   name: Get the latest package of Fathom
+        get_url:
+            url: https://github.com/usefathom/fathom/releases/download/latest-development/fathom-linux-amd64
+            dest: /usr/local/bin/fathom
+            mode: '0755'
+
+    -   name: Set the .env file at home directory
+        templates:
+            src: ".env.j2"
+            dest: /home/.env
+    
+    -   pause:
+            prompt: "Please Type Your Email ID"
+            echo: yes
+        register: your_email_id_result
+        
+    -   set_fact:
+            your_email_id: "{{ your_email_id_result.user_input }}"
+
+    -   name: Create the Admin User
+        shell: fathom --config=/home/.env user add --email={{ your_email_id }} --password=pwslab_admin
+
+    -   name: Set the service to be bootable
+        templates:
+            src: "fathom.service.j2"
+            dest: /etc/systemd/system/fathom.service
+
+    -   name: Start and Enable the Fathom service
+        systemd:
+            name: fathom
+            state: started
+            enabled: yes
+            daemon_reload: yes
