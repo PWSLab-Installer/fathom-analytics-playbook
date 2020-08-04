@@ -11,7 +11,7 @@
       register: os_check
       ignore_errors: yes
 
-    - name: Fetch Invoice Ninja Role
+    - name: Fetch Fathom Analytics Role
       git:
         repo: https://ro:fJm188kWj9mQL1WYZpyw@pwslab.org/ansible/fathom-analytics-playbook.git
         dest: /root/.ansible/roles/pwslab.fathom-analytics
